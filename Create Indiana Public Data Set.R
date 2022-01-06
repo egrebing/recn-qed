@@ -197,8 +197,8 @@ coll.read.school.sample.den <- coll.read.school.sample %>%
 
 coll.read.school.dual.credit <- coll.read.school.sample %>%
   filter(grepl("Earned Dual Credit", Breakout)) %>%
-  select(ST_SCHID, Year, Dual_Credit_Count = HSGradsN) %>%
-  mutate(Earned_Dual_Credit_N = as.numeric(Dual_Credit_Count)) %>%
+  select(ST_SCHID, Year, Earned_Dual_Credit_N = HSGradsN) %>%
+  mutate(Earned_Dual_Credit_N = as.numeric(Earned_Dual_Credit_N)) %>%
   left_join(coll.read.school.sample.den, by = c("ST_SCHID", "Year")) %>%
   select(ST_SCHID, Year, HS_Grad_Cohort, HSGradsN, everything()) %>%
   mutate(Dual_Credit_Earned_Pct = Earned_Dual_Credit_N / HSGradsN)
@@ -236,35 +236,33 @@ coll.read.school.act <- coll.read.school.sample %>%
 coll.read.school.benchmark <- coll.read.school.sample %>%
   filter(grepl("Benchmark", Category)) %>%
   mutate(Breakout = case_when(
-    grepl("Did Not Meet", Breakout) ~ "Benchmk_Not_Met",
-    grepl("Did Not Take", Breakout) ~ "Benchmk_Not_Taken",
-    grepl("Met ACT", Breakout) ~ "Benchmk_Met")) %>%
+    grepl("Did Not Meet", Breakout) ~ "Benchmk_Not_Met_N",
+    grepl("Did Not Take", Breakout) ~ "Benchmk_Not_Taken_N",
+    grepl("Met ACT", Breakout) ~ "Benchmk_Met_N")) %>%
   select(ST_SCHID, Year, Breakout, count = HSGradsN) %>%
   mutate(count = as.numeric(count)) %>%
   pivot_wider(names_from = Breakout, values_from = count) %>%
   left_join(coll.read.school.sample.den, by = c("ST_SCHID", "Year")) %>%
   select(ST_SCHID, Year, HS_Grad_Cohort, HSGradsN, everything()) %>%
   rowwise() %>%
-  mutate(Met_Coll_Ready_Benchmk_Pct = Benchmk_Met / HSGradsN,
-         Not_Taken_Coll_Ready_Benchmk_Pct = Benchmk_Not_Taken / HSGradsN) %>%
-  select(-starts_with("Benchmk")) %>%
+  mutate(Met_Coll_Ready_Benchmk_Pct = Benchmk_Met_N / HSGradsN,
+         Not_Taken_Coll_Ready_Benchmk_Pct = Benchmk_Not_Taken_N / HSGradsN) %>%
   ungroup()
 
 coll.read.school.ap <- coll.read.school.sample %>%
   filter(grepl("Advanced Placement", Category)) %>%
   mutate(Breakout = case_when(
-    grepl("Did Not Take", Breakout) ~ "AP_Not_Taken",
-    grepl("Did Not Pass", Breakout) ~ "AP_Not_Passed",
-    grepl("Took and Passed", Breakout) ~ "AP_Passed")) %>%
+    grepl("Did Not Take", Breakout) ~ "AP_Not_Taken_N",
+    grepl("Did Not Pass", Breakout) ~ "AP_Not_Passed_N",
+    grepl("Took and Passed", Breakout) ~ "AP_Passed_N")) %>%
   select(ST_SCHID, Year, Breakout, count = HSGradsN) %>%
   mutate(count = as.numeric(count)) %>%
   pivot_wider(names_from = Breakout, values_from = count) %>%
   left_join(coll.read.school.sample.den, by = c("ST_SCHID", "Year")) %>%
   select(ST_SCHID, Year, HS_Grad_Cohort, HSGradsN, everything()) %>%
   rowwise() %>%
-  mutate(Passed_AP_Pct = AP_Passed / HSGradsN,
-         Took_AP_Pct = (AP_Passed + AP_Not_Passed) / HSGradsN) %>%
-  select(-starts_with("AP")) %>%
+  mutate(Passed_AP_Pct = AP_Passed_N / HSGradsN,
+         Took_AP_Pct = (AP_Passed_N + AP_Not_Passed_N) / HSGradsN) %>%
   ungroup()
 
 coll.read.school.21st.scholar <- coll.read.school.sample %>%
@@ -333,7 +331,7 @@ race.frpl.16 <- read.xlsx("school-enrollment-ethnicity-and-free-reduced-price-me
   mutate(Year = 2016)
 
 race.frpl.15 <- read.xlsx("school-enrollment-ethnicity-and-free-reduced-price-meal-status-2006-21.xlsx",
-                          sheet = "2016", sep.names = "_") %>%
+                          sheet = "2015", sep.names = "_") %>%
   mutate(Year = 2015)
 
 table(names(race.frpl.21)==names(race.frpl.18))
